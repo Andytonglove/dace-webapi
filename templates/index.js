@@ -6,9 +6,13 @@ function checkId() {
     // 判断是8-13位数的正则表达式
     var reg = /^\d{8,13}$/;
     if (reg.test(stuId)) {
+        // 学号输入框边框变为绿色
+        document.getElementById("inputId3").style.borderColor = "green";
         return true;
     } else {
         commonUtil.message("学号格式错误", "danger");
+        // 学号输入框边框变为红色
+        document.getElementById("inputId3").style.borderColor = "red";
         return false;
     }
 }
@@ -18,9 +22,11 @@ function checkPhone() {
     var phone = document.getElementById("inputPhone3").value;
     var reg = /^1[34578]\d{9}$/;
     if (reg.test(phone)) {
+        document.getElementById("inputPhone3").style.borderColor = "green";
         return true;
     } else {
         commonUtil.message("手机号格式错误", "danger");
+        document.getElementById("inputPhone3").style.borderColor = "red";
         return false;
     }
 }
@@ -30,9 +36,11 @@ function checkEmail() {
     var email = document.getElementById("inputEmail3").value;
     var reg = /^(\w-*\.*)+@(\w-?)+(\.\w{2,})+$/;
     if (reg.test(email)) {
+        document.getElementById("inputEmail3").style.borderColor = "green";
         return true;
     } else {
         commonUtil.message("邮箱格式错误", "danger");
+        document.getElementById("inputEmail3").style.borderColor = "red";
         return false;
     }
 }
@@ -47,7 +55,7 @@ function check() {
         var phone = document.getElementById("inputPhone3").value;
         var hobby = document.getElementById("inputHobby3").value;
 
-        // 把数据按照collection.json中的格式打包程json，传递到后台
+        // 把数据按照collection.json中的格式打包为json，传递到后台
         var data = {
             "name": name,
             "stuId": stuId,
@@ -55,6 +63,7 @@ function check() {
             "phone": phone,
             "hobby": hobby
         };
+        // 把json数据保存到本地/data文件夹中
         $.ajax({
             url: "/api/submit",
             type: "POST",
