@@ -63,7 +63,7 @@ function check() {
             "phone": phone,
             "hobby": hobby
         };
-        // 把json数据保存到本地/data文件夹中
+        // 把json数据写入json文件
         $.ajax({
             url: "/api/submit",
             type: "POST",
@@ -82,8 +82,7 @@ function check() {
                 commonUtil.message("提交失败！", "danger");
             }
         });
-
-        commonUtil.message("提交成功！");
+        // commonUtil.message("提交成功！");
     } else {
         commonUtil.message("提交失败！", "danger");
     }
