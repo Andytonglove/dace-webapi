@@ -65,7 +65,8 @@ function check() {
         };
         // 把json数据写入json文件
         $.ajax({
-            url: "/api/submit",
+            url: "http://localhost:1337/api/submit",  // 后台接口，需要自己写，参考collection.js，这里是写在了同一个文件中，所以是/api/submit
+            dataType: "jsonp", // 跨域请求，需要jsonp
             type: "POST",
             data: JSON.stringify(data),
             contentType: "application/json",
@@ -104,7 +105,8 @@ function onreset() {
 function show() {
     // 从后台获取json文件中的数据给表格中for item in data
     $.ajax({
-        url: "/api/show",
+        url: "http://localhost:1337/api/show",
+        dataType: "jsonp",
         type: "GET",
         success: function (data) {
             console.log(data);
