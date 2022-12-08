@@ -55,13 +55,13 @@ function check() {
         var phone = document.getElementById("inputPhone3").value;
         var hobby = document.getElementById("inputHobby3").value;
 
-        // 把数据按照collection.json中的格式打包为json，传递到后台
+        // 把数据按照collection.js中的格式打包为json，传递到后台
         var data = {
-            "name": name,
-            "stuId": stuId,
-            "email": email,
-            "phone": phone,
-            "hobby": hobby
+            name: name,
+            stuId: stuId,
+            email: email,
+            phone: phone,
+            hobby: hobby
         };
         // 把json数据写入json文件
         $.ajax({
@@ -86,6 +86,8 @@ function check() {
     } else {
         commonUtil.message("提交失败！", "danger");
     }
+
+    show(); // 更新展示表格
 }
 
 // 点击重置按钮时，清空所有输入框
@@ -98,6 +100,38 @@ function onreset() {
         = "";
 }
 
+// 个人信息采集查看页面
+function show() {
+    // 从后台获取json文件中的数据给表格中for item in data
+    $.ajax({
+        url: "/api/show",
+        type: "GET",
+        success: function (data) {
+            console.log(data);
+            if (data.status == 200) {
+                var html = "";
+                for (var i = 0; i < data.data.length; i++) {
+                    html += "<tr>";
+                    html += "<td>" + data.data[i].name + "</td>";
+                    html += "<td>" + data.data[i].stuId + "</td>";
+                    html += "<td>" + data.data[i].email + "</td>";
+                    html += "<td>" + data.data[i].phone + "</td>";
+                    html += "<td>" + data.data[i].hobby + "</td>";
+                    html += "</tr>";
+                }
+                document.getElementById("tbody").innerHTML = html;
+            } else {
+                commonUtil.message("获取数据失败！", "danger");
+            }
+        },
+        error: function (data) {
+            console.log(data);
+            commonUtil.message("获取数据失败！", "danger");
+        }
+    });
+}
+
+window.onload = show; // 页面加载即调用show
 
 
 // 消息提示框组件

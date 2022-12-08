@@ -23,6 +23,31 @@ app.post('/api/submit', (req, res) => {
 
 });
 
+// 获取所有数据
+app.get('/api/getAll', (req, res) => {
+    fs.readFile(jsonFile, 'utf8', (err, data) => {
+        res.send(data);
+    });
+});
+
+// api/show展示文件夹内所有数据
+app.get('/api/show', (req, res) => {
+    fs.readdir(__dirname, (err, files) => {
+        if (err) {
+            console.log(err);
+        } else {
+            // 将文件内容依次返回给前端
+            var data = [];
+            files.forEach(file => {
+                var content = fs.readFileSync
+                    (__dirname + '/' + file, 'utf8');
+                data.push(content);
+            });
+            res.send(data);
+        }
+    });
+});
+
 //删除
 app.get('/delete/:id', (req, res) => {
     fs.readFile(jsonFile, 'utf8', (err, data) => {
