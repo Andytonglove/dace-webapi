@@ -1,2 +1,17 @@
 # 忽略bootstrap文件夹
 bootstrap/
+
+# 忽略node_modules文件夹
+node_modules/
+
+# 忽略.idea文件夹
+.idea/
+
+# 忽略.vscode文件夹
+.vscode/
+
+# 忽略.DS_Store文件
+.DS_Store
+
+# 忽略.package-lock.json文件
+package-lock.json
