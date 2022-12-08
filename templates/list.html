@@ -62,10 +62,39 @@
     <h2 class="text-center">个人信息采集查看</h2>
     <p class="text-center">在下方查看采集的个人信息</p>
 
+    <!-- 从服务器查看获取个人信息采集的列表 -->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>姓名</th>
+                            <th>学号</th>
+                            <th>邮箱</th>
+                            <th>电话</th>
+                            <th>兴趣</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in data %}
+                        <tr>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.id }}</td>
+                            <td>{{ item.email }}</td>
+                            <td>{{ item.phone }}</td>
+                            <td>{{ item.hobby }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <nav aria-label="..." class="text-center col-sm-offset-2 col-sm-8">
         <ul class="pager">
-            <li class="previous"><a href="index.html"><span aria-hidden="true">&larr;</span> 首页</a></li>
+            <li class="previous"><a href="index.html"><span aria-hidden="true">&larr;</span> 采集首页</a></li>
             <li class="next"><a href="about.html">关于页面 <span aria-hidden="true">&rarr;</span></a></li>
         </ul>
     </nav>

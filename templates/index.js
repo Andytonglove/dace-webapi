@@ -74,7 +74,6 @@ function check() {
             }
         });
 
-
         commonUtil.message("提交成功！");
     } else {
         commonUtil.message("提交失败！", "danger");
