@@ -77,39 +77,100 @@ router.get("/api/show", function (req, res) {
     });
 });
 
-// TODO
-
-
-// 处理get请求，返回某一项数据
-app.get('/api/get/:id', (req, res) => {
-    fs.readFile(jsonFile, 'utf8', (err, data) => {
-        // 在文件夹所有文件中查找对应名称的文件
-        data = JSON.parse(data);
-        const index = data.findIndex(x => x.id == req.params.id);
-        res.send(data[index]);
+// /api/add接口，增加一项数据
+router.post("/api/add", function (req, res) {
+    var data = req.body.data;
+    // 判断数据是否存在
+    fs.exists(__dirname + data.id + ".json", function (exists) {
+        if (exists) {
+            // 数据已存在
+            res.json({
+                status: 500,
+                message: "条目已存在"
+            });
+        } else {
+            // 数据不存在，写入文件
+            fs.writeFile(__dirname + data.id + ".json", JSON.stringify(data), function (err) {
+                if (err) {
+                    console.log(err);
+                    res.json({
+                        status: 500,
+                        message: "添加失败"
+                    });
+                } else {
+                    res.json({
+                        status: 200,
+                        message: "添加成功"
+                    });
+                }
+            });
+        }
     });
 });
 
-// 处理post请求，返回某一项数据
-app.post('/api/post', (req, res) => {
-    fs.readFile(jsonFile, 'utf8', (err, data) => {
-        data = JSON.parse(data);
-        const index = data.findIndex(x => x.id == req.params.id);
-        res.send(data[index]);
+// /api/delete接口，删除一项数据
+router.post("/api/delete", function (req, res) {
+    var data = req.body.data;
+    // 判断数据是否存在
+    fs.exists(__dirname + data.id + ".json", function (exists) {
+        if (exists) {
+            // 数据存在，删除文件
+            fs.unlink(__dirname + data.id + ".json", function (err) {
+                if (err) {
+                    console.log(err);
+                    res.json({
+                        status: 500,
+                        message: "删除失败"
+                    });
+                } else {
+                    res.json({
+                        status: 200,
+                        message: "删除成功"
+                    });
+                }
+            });
+        } else {
+            // 数据不存在
+            res.json({
+                status: 500,
+                message: "条目不存在"
+            });
+        }
     });
 });
 
-
-// put请求，更新某一项数据
-app.put('/api/put', (req, res) => {
-    fs.readFile(jsonFile, 'utf8', (err, data) => {
-        data = JSON.parse(data);
-        const index = data.findIndex(x => x.id == req.params.id);
-        data[index] = req.body;
-        saveJson(data);
-        res.send(data);
-    });
+// /api/put接口，更新一项数据
+router.post("/api/put", function (req, res) {
+    var data = req.body.data;
+    // 判断数据是否存在
+    fs.exists
+        (__dirname + data.id + ".json", function (exists) {
+            if (exists) {
+                // 数据存在，更新文件
+                fs.writeFile(__dirname + data.id + ".json", JSON.stringify(data), function (err) {
+                    if (err) {
+                        console.log(err);
+                        res.json({
+                            status: 500,
+                            message: "更新失败"
+                        });
+                    } else {
+                        res.json({
+                            status: 200,
+                            message: "更新成功"
+                        });
+                    }
+                });
+            } else {
+                // 数据不存在
+                res.json({
+                    status: 500,
+                    message: "条目不存在"
+                });
+            }
+        });
 });
+
 
 // delete请求，删除某一项数据
 app.delete('/api/delete', (req, res) => {
@@ -122,32 +183,54 @@ app.delete('/api/delete', (req, res) => {
     });
 });
 
-// 获取所有数据请求，返回所有数据
-app.get('/api/getAll', (req, res) => {
-    fs.readFile(jsonFile, 'utf8', (err, data) => {
-        // 返回文件夹内所有文件中的数据
-        data = JSON.parse(data);
-        res.send(data);
-    });
-});
-
-// api/show展示文件夹内所有数据
-app.get('/api/show', (req, res) => {
-    fs.readdir(__dirname, (err, files) => {
+// 输出所有条目列表，可以指定按时间升序或降序排列
+router.get("/api/list", function (req, res) {
+    var sort = req.query.sort; // 获取排序方式，升序或降序
+    var list = []; // 创建一个空数组，用来存放所有条目
+    fs.readdir(__dirname, function (err, files) { // 读取目录下的所有文件
         if (err) {
-            console.log(err);
-        } else {
-            // 将文件内容依次返回给前端
-            var data = [];
-            files.forEach(file => {
-                var content = fs.readFileSync
-                    (__dirname + '/' + file, 'utf8');
-                data.push(content);
+            // 如果发生错误，返回错误信息
+            res.json({
+                status: 500,
+                message: "读取目录失败"
             });
-            res.send(data);
+        } else {
+            // 如果没有错误，遍历所有文件
+            files.forEach(function (file) {
+                // 把每个文件的内容读取出来，转换为JSON格式
+                fs.readFile(__dirname + file, "utf-8", function (err, data) {
+                    if (err) {
+                        // 如果发生错误，返回错误信息
+                        res.json({
+                            status: 500,
+                            message: "读取文件失败"
+                        });
+                    } else {
+                        // 如果没有错误，把文件内容转换为JSON格式，并添加到list数组中
+                        list.push(JSON.parse(data));
+                        // 如果list数组的长度和files数组的长度相同，说明所有文件都已经读取完毕
+                        if (list.length == files.length) {
+                            // 如果有排序方式，按照排序方式排序
+                            if (sort) {
+                                list.sort(function (a, b) {
+                                    return sort == "asc" ? a.id - b.id : b.id - a.id;
+                                });
+                            }
+                            // 返回list数组
+                            res.json({
+                                status: 200,
+                                message: "读取成功",
+                                data: list
+                            });
+                        }
+                    }
+                });
+            });
         }
     });
 });
+
+// TODO:
 
 //删除
 app.get('/delete/:id', (req, res) => {
