@@ -70,7 +70,7 @@ function check() {
             url: "http://localhost:1337/api/submit",  // 后台接口，需要自己写，参考collection.js，这里是写在app中，所以是/api/submit
             // 指定请求为CORS请求
             xhrFields: {
-                withCredentials: true
+                withCredentials: false
             },
             type: "POST",
             data: JSON.stringify(data), // 将json数据转换为字符串，传递给后台，后台再转换为json格式
@@ -123,7 +123,7 @@ function show() {
         // CORS处理跨域请求
         // 指定请求为CORS请求
         xhrFields: {
-            withCredentials: true
+            withCredentials: false
         },
         type: "GET",
         success: function (data) {

@@ -8,10 +8,12 @@ const cors = require("cors");
 
 // 使用cors中间件，解决跨域问题
 app.use(cors({
-    // 设置允许跨域的域名，限定本机，不能是*
-    accessControlAllowOrigin: "http://localhost:5500",
-    // 允许来自指定域名的请求
-    origin: "http://127.0.0.1:5500",
+    // 允许来自指定域名的请求，如果请求的凭据模式为’include’时,响应中的Access-Control-Allow-Origin’头不能为’*’
+    // origin: "http://127.0.0.1:5500",
+    // 允许来自所有域名的请求
+    origin: "*",
+    // 允许跨域的请求方式
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     // 允许发送身份凭证
     credentials: true
 }));
@@ -27,6 +29,8 @@ __dirname = './data';
 const router = express.Router();
 // 使用router
 app.use(router);
+
+// 网页端
 
 // /api/submit接口
 router.post("/api/submit", function (req, res) {
@@ -81,7 +85,7 @@ router.get("/api/show", function (req, res) {
 router.post("/api/add", function (req, res) {
     var data = req.body.data;
     // 判断数据是否存在
-    fs.exists(__dirname + data.id + ".json", function (exists) {
+    fs.access(__dirname + "/" + data.id + ".json", function (exists) {
         if (exists) {
             // 数据已存在
             res.json({
@@ -90,7 +94,7 @@ router.post("/api/add", function (req, res) {
             });
         } else {
             // 数据不存在，写入文件
-            fs.writeFile(__dirname + data.id + ".json", JSON.stringify(data), function (err) {
+            fs.writeFile(__dirname + "/" + data.id + ".json", JSON.stringify(data), function (err) {
                 if (err) {
                     console.log(err);
                     res.json({
@@ -112,10 +116,10 @@ router.post("/api/add", function (req, res) {
 router.post("/api/delete", function (req, res) {
     var data = req.body.data;
     // 判断数据是否存在
-    fs.exists(__dirname + data.id + ".json", function (exists) {
+    fs.access(__dirname + "/" + data.id + ".json", function (exists) {
         if (exists) {
             // 数据存在，删除文件
-            fs.unlink(__dirname + data.id + ".json", function (err) {
+            fs.unlink(__dirname + "/" + data.id + ".json", function (err) {
                 if (err) {
                     console.log(err);
                     res.json({
@@ -143,11 +147,11 @@ router.post("/api/delete", function (req, res) {
 router.post("/api/put", function (req, res) {
     var data = req.body.data;
     // 判断数据是否存在
-    fs.exists
-        (__dirname + data.id + ".json", function (exists) {
+    fs.access
+        (__dirname + "/" + data.id + ".json", function (exists) {
             if (exists) {
                 // 数据存在，更新文件
-                fs.writeFile(__dirname + data.id + ".json", JSON.stringify(data), function (err) {
+                fs.writeFile(__dirname + "/" + data.id + ".json", JSON.stringify(data), function (err) {
                     if (err) {
                         console.log(err);
                         res.json({
@@ -198,7 +202,7 @@ router.get("/api/list", function (req, res) {
             // 如果没有错误，遍历所有文件
             files.forEach(function (file) {
                 // 把每个文件的内容读取出来，转换为JSON格式
-                fs.readFile(__dirname + file, "utf-8", function (err, data) {
+                fs.readFile(__dirname + "/" + file, "utf-8", function (err, data) {
                     if (err) {
                         // 如果发生错误，返回错误信息
                         res.json({
@@ -259,3 +263,36 @@ function saveJson(data) {
 app.listen(app.get('port'), () => {
     console.log('Server listening on: http://localhost:', app.get('port'));
 });
+
+
+// APP
+
+// 对应上面的API，提供APP端的命令行操作
+const program = require('commander');
+// 编写支持命令行的api
+program
+    .version('0.0.1')
+    .option('-a, --add', 'add a new item')
+    .option('-u, --update', 'update an item')
+    .option('-d, --delete', 'delete an item')
+    .option('-l, --list', 'list all items')
+    .parse(process.argv);
+
+// 如果没有输入命令，提示用户输入命令
+if (!process.argv.slice(2).length) {
+    program.outputHelp();
+}
+
+// 如果输入了命令，执行对应的命令
+if (program.add) {
+    console.log('add');
+}
+if (program.update) {
+    console.log('update');
+}
+if (program.delete) {
+    console.log('delete');
+}
+if (program.list) {
+    console.log('list');
+}
