@@ -14,7 +14,7 @@ app.use(cors({
     origin: "*",
     // 允许跨域的请求方式
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    // 允许发送身份凭证
+    // 允许发送身份凭证，但是在发送端设置withCredentials: false，从而不会发送身份凭证
     credentials: true
 }));
 
@@ -81,8 +81,9 @@ router.get("/api/show", function (req, res) {
     });
 });
 
-// /api/add接口，增加一项数据
+// /api/add接口，增加一项数据：新增
 router.post("/api/add", function (req, res) {
+    // 请求格式为：{data: {id: "xxx", name: "xxx", ...}}
     var data = req.body.data;
     // 判断数据是否存在
     fs.access(__dirname + "/" + data.id + ".json", function (exists) {
@@ -112,9 +113,10 @@ router.post("/api/add", function (req, res) {
     });
 });
 
-// /api/delete接口，删除一项数据
+// /api/delete接口，删除一项数据：删除
 router.post("/api/delete", function (req, res) {
     var data = req.body.data;
+    // 请求格式为：{data: {id: "xxx"}}
     // 判断数据是否存在
     fs.access(__dirname + "/" + data.id + ".json", function (exists) {
         if (exists) {
@@ -143,8 +145,9 @@ router.post("/api/delete", function (req, res) {
     });
 });
 
-// /api/put接口，更新一项数据
+// /api/put接口，更新一项数据：修改
 router.post("/api/put", function (req, res) {
+    // 例如：全部的请求为：http://localhost:3000/api/put?data={"id":"1","name":"张三","age":"18"}
     var data = req.body.data;
     // 判断数据是否存在
     fs.access
@@ -175,21 +178,42 @@ router.post("/api/put", function (req, res) {
         });
 });
 
-
-// delete请求，删除某一项数据
-app.delete('/api/delete', (req, res) => {
-    fs.readFile(jsonFile, 'utf8', (err, data) => {
-        data = JSON.parse(data);
-        const index = data.findIndex(x => x.id == req.params.id);
-        data.splice(index, 1);
-        saveJson(data);
-        res.send(data);
+// delete/:id请求，删除某一项数据
+router.delete("/api/delete/:id", function (req, res) {
+    var id = req.params.id;
+    // 例如：/api/delete/1
+    // 判断数据是否存在
+    fs.access(__dirname + "/" + id + ".json", function (exists) {
+        if (exists) {
+            // 数据存在，删除文件
+            fs.unlink(__dirname + "/" + id + ".json", function (err) {
+                if (err) {
+                    console.log(err);
+                    res.json({
+                        status: 500,
+                        message: "删除失败"
+                    });
+                } else {
+                    res.json({
+                        status: 200,
+                        message: "删除成功"
+                    });
+                }
+            });
+        } else {
+            // 数据不存在
+            res.json({
+                status: 500,
+                message: "条目不存在"
+            });
+        }
     });
 });
 
-// 输出所有条目列表，可以指定按时间升序或降序排列
+// 输出所有条目列表，可以指定按时间升序或降序排列：列表
 router.get("/api/list", function (req, res) {
     var sort = req.query.sort; // 获取排序方式，升序或降序
+    // 例如：http://localhost:3000/api/list?sort=asc
     var list = []; // 创建一个空数组，用来存放所有条目
     fs.readdir(__dirname, function (err, files) { // 读取目录下的所有文件
         if (err) {
@@ -234,30 +258,8 @@ router.get("/api/list", function (req, res) {
     });
 });
 
-// TODO:
+// TODO: 代码中有很多重复的代码，可以抽象出来，减少重复代码，如读取文件，转换为JSON格式，返回数据等
 
-//删除
-app.get('/delete/:id', (req, res) => {
-    fs.readFile(jsonFile, 'utf8', (err, data) => {
-        data = JSON.parse(data);
-        const index = data.findIndex(x => x.id == req.params.id);
-        data.splice(index, 1);
-        console.log(data);
-        saveJson(data);
-        res.send(data);
-    });
-});
-
-//保存到文件
-function saveJson(data) {
-    fs.writeFile(jsonFile, JSON.stringify(data), "utf-8", err => {
-        if (!err) {
-            console.log('写入成功！')
-        } else {
-            console.log('写入失败！')
-        }
-    });
-}
 
 // 监听端口，这里以localhost的1337端口为例
 app.listen(app.get('port'), () => {
