@@ -2,6 +2,7 @@
 const express = require('express');
 const app = express();
 const fs = require("fs");
+
 // 引入cors库
 const cors = require("cors");
 
@@ -14,6 +15,9 @@ app.use(cors({
     // 允许发送身份凭证
     credentials: true
 }));
+
+var bodyParser = require("body-parser");
+app.use(bodyParser.json());
 
 app.set('port', process.env.PORT || 1337);  // 设置端口号，同机需要与前端可以不一致
 // 读取存储在data文件夹中的文件
@@ -31,7 +35,7 @@ router.post("/api/submit", function (req, res) {
     // 把数据按照collection.js中的格式打包为json，传递到后台
     // 把json数据写入json文件
     console.log(data);
-    fs.writeFile(__dirname + data.stuId + ".json", JSON.stringify(data), function (err) {
+    fs.writeFile(__dirname + "/" + data.stuId + ".json", JSON.stringify(data), function (err) {
         if (err) {
             console.log(err);
             res.json({

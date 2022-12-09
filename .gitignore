@@ -13,5 +13,5 @@ node_modules/
 # 忽略.DS_Store文件
 .DS_Store
 
-# 忽略.package-lock.json文件
-package-lock.json
+# 不忽略.package-lock.json文件
+# package-lock.json
