@@ -45,8 +45,8 @@ function checkEmail() {
     }
 }
 
-// 点击提交按钮时候，跳转
 function check() {
+    console.log("提交按钮被点击 执行check()函数");
     if (checkId() && checkPhone() && checkEmail()) {
         // 将表单信息传递到后台
         var name = document.getElementById("inputName3").value;
@@ -57,18 +57,30 @@ function check() {
 
         // 把数据按照collection.js中的格式打包为json，传递到后台
         var data = {
-            name: name,
-            stuId: stuId,
-            email: email,
-            phone: phone,
-            hobby: hobby
+            "name": name,
+            "stuId": stuId,
+            "email": email,
+            "phone": phone,
+            "hobby": hobby
         };
+        console.log(data);
         // 把json数据写入json文件
         $.ajax({
-            url: "http://localhost:1337/api/submit",  // 后台接口，需要自己写，参考collection.js，这里是写在了同一个文件中，所以是/api/submit
-            dataType: "jsonp", // 跨域请求，需要jsonp
+            // 后台接口
+            url: "http://localhost:1337/api/submit",  // 后台接口，需要自己写，参考collection.js，这里是写在app中，所以是/api/submit
+            // 指定请求为CORS请求
+            xhrFields: {
+                withCredentials: true
+            },
             type: "POST",
-            data: JSON.stringify(data),
+            data: JSON.stringify(data), // 将json数据转换为字符串，传递给后台，后台再转换为json格式
+            // {
+            //     "name": "张三",
+            //     "stuId": "123456",
+            //     "email": "zhangsan@example.com",
+            //     "phone": "13000000000",
+            //     "hobby": "篮球"
+            // }
             contentType: "application/json",
             success: function (data) {
                 console.log(data);
@@ -83,12 +95,14 @@ function check() {
                 commonUtil.message("提交失败！", "danger");
             }
         });
-        // commonUtil.message("提交成功！");
+        commonUtil.message("已提交！", "info");
+        // 在此页面停留1秒钟，下滑到本页面的底部
+        setTimeout(function () {
+            window.scrollTo(0, document.body.scrollHeight);
+        }, 1000);
     } else {
         commonUtil.message("提交失败！", "danger");
     }
-
-    show(); // 更新展示表格
 }
 
 // 点击重置按钮时，清空所有输入框
@@ -106,7 +120,11 @@ function show() {
     // 从后台获取json文件中的数据给表格中for item in data
     $.ajax({
         url: "http://localhost:1337/api/show",
-        dataType: "jsonp",
+        // CORS处理跨域请求
+        // 指定请求为CORS请求
+        xhrFields: {
+            withCredentials: true
+        },
         type: "GET",
         success: function (data) {
             console.log(data);
@@ -115,7 +133,7 @@ function show() {
                 for (var i = 0; i < data.data.length; i++) {
                     html += "<tr>";
                     html += "<td>" + data.data[i].name + "</td>";
-                    html += "<td>" + data.data[i].stuId + "</td>";
+                    html += "<td>" + data.data[i].id + "</td>";
                     html += "<td>" + data.data[i].email + "</td>";
                     html += "<td>" + data.data[i].phone + "</td>";
                     html += "<td>" + data.data[i].hobby + "</td>";
@@ -134,6 +152,7 @@ function show() {
 }
 
 window.onload = show; // 页面加载即调用show
+
 
 
 // 消息提示框组件

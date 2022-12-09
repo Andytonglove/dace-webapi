@@ -76,8 +76,8 @@
                             <th>兴趣</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% for item in data %}
+                    <tbody id="tb1">
+                        <!-- {% for item in data %}
                         <tr>
                             <td>{{ item.name }}</td>
                             <td>{{ item.id }}</td>
@@ -85,7 +85,7 @@
                             <td>{{ item.phone }}</td>
                             <td>{{ item.hobby }}</td>
                         </tr>
-                        {% endfor %}
+                        {% endfor %} -->
                     </tbody>
                 </table>
             </div>
@@ -100,6 +100,33 @@
     </nav>
 
 
+    <script>
+        // 从服务器查看获取个人信息采集的列表填充
+        $(function () {
+            $.ajax({
+                url: 'http://localhost:1337/api/show',
+                xhrFields: {
+                    withCredentials: true
+                },
+                type: 'get',
+                dataType: 'json',
+                success: function (data) {
+                    console.log(data);
+                    data = data.data;
+                    var html = '';
+                    for (var i = 0; i < data.length; i++) {
+                        html += '<tr><td>' + data[i].name + '</td><td>' + data[i].id + '</td><td>' + data[i].email +
+                            '</td><td>' + data[i].phone + '</td><td>' + data[i].hobby + '</td></tr>';
+                    }
+                    $('#tb1').html(html);
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+            });
+        });
+
+    </script>
 </body>
 
 </html>
