@@ -3,6 +3,7 @@ const express = require('express');
 const app = express();
 const fs = require("fs");
 const program = require('commander');
+const path = require('path');
 
 // 引入cors库
 const cors = require("cors");
@@ -51,7 +52,7 @@ router.post("/api/submit", function (req, res) {
         } else {
             res.json({
                 status: 200,
-                message: "提交成功"
+                message: "提交成功" + __dirname + "/" + data.id + ".json"
             });
         }
     });
@@ -89,7 +90,7 @@ router.post("/api/add", function (req, res) {
     var data = req.body.data;
     // 判断数据是否存在
     fs.access(__dirname + "/" + data.id + ".json", function (exists) {
-        if (exists) {
+        if (!exists) {
             // 数据已存在
             res.json({
                 status: 500,
@@ -115,7 +116,7 @@ router.post("/api/add", function (req, res) {
     });
 });
 
-// /api/delete接口，删除一项数据：删除
+// /api/delete接口，删除一项数据：删除 √
 router.post("/api/delete", function (req, res) {
     var data = req.body; // 请求格式为：{"id": xxx}
     console.log(data);
@@ -123,29 +124,34 @@ router.post("/api/delete", function (req, res) {
     // 获取请求体中的id，请求体为字符串，即使是json格式，需要转换为json对象
     // data = JSON.parse(data);
 
-    // 判断数据是否存在
-    fs.access(__dirname + "/" + data.id + ".json", function (exists) {
-        if (exists) {
+    // 判断数据是否存在：在使用 fs.access() 方法时，如果检查的文件存在，则不会返回任何结果。如果文件不存在，则会返回一个错误。
+    // 数据存在却无法删除，相对路径问题，需要使用绝对路径，__dirname为当前文件所在目录
+    // 获取当前文件所在目录
+    console.log(path.resolve(__dirname + "/" + data.id + ".json"));
+
+    fs.access(path.resolve(__dirname + "/" + data.id + ".json"), function (exists) {
+        if (!exists) {
             // 数据存在，删除文件
-            fs.unlink(__dirname + "/" + data.id + ".json", function (err) {
+            fs.unlink(path.resolve(__dirname + "/" + data.id + ".json"), function (err) {
                 if (err) {
                     console.log(err);
                     res.json({
                         status: 500,
-                        message: "删除失败" + __dirname + "/" + data.id + ".json" + err.message
+                        message: "删除失败"
                     });
                 } else {
                     res.json({
                         status: 200,
-                        message: "删除成功" + __dirname + "/" + data.id + ".json"
+                        message: "删除成功"
                     });
                 }
-            });
+            }
+            );
         } else {
             // 数据不存在
             res.json({
                 status: 500,
-                message: "条目不存在，为" + __dirname + "/" + data.id + ".json"
+                message: "条目不存在"
             });
         }
     });
@@ -158,7 +164,7 @@ router.post("/api/update", function (req, res) {
     // 判断数据是否存在
     fs.access(__dirname + "/" + data.id + ".json", function (exists) {
         console.log(__dirname + "/" + data.id + ".json");
-        if (exists) {
+        if (!exists) {
             // 数据存在，更新文件
             fs.writeFile(__dirname + "/" + data.id + ".json", JSON.stringify(data), function (err) {
                 if (err) {
@@ -191,7 +197,7 @@ router.delete("/api/delete/:id", function (req, res) {
     // 例如：/api/delete/1
     // 判断数据是否存在
     fs.access(__dirname + "/" + id + ".json", function (exists) {
-        if (exists) {
+        if (!exists) {
             // 数据存在，删除文件
             fs.unlink(__dirname + "/" + id + ".json", function (err) {
                 if (err) {
@@ -271,7 +277,7 @@ router.get("/api/find/:id", function (req, res) {
     // 例如：/api/find/1
     // 判断数据是否存在
     fs.access(__dirname + "/" + id + ".json", function (exists) {
-        if (exists) {
+        if (!exists) {
             // 数据存在，读取文件
             fs.readFile(__dirname + "/" + id + ".json", "utf-8", function (err, data) {
                 if (err) {
