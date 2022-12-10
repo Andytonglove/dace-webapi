@@ -32,7 +32,7 @@ const router = express.Router();
 // 使用router
 app.use(router);
 
-// 网页端，下面是APIs接口
+// 网页端，下面是RESTful API接口
 
 // /api/submit接口 √
 router.post("/api/submit", function (req, res) {
@@ -124,8 +124,8 @@ router.post("/api/delete", function (req, res) {
     // 获取请求体中的id，请求体为字符串，即使是json格式，需要转换为json对象
     // data = JSON.parse(data);
 
-    // 判断数据是否存在：在使用 fs.access() 方法时，如果检查的文件存在，则不会返回任何结果。如果文件不存在，则会返回一个错误。
-    // 数据存在却无法删除，相对路径问题，需要使用绝对路径，__dirname为当前文件所在目录
+    // 判断数据是否存在：在使用 fs.access() 方法时，如果检查的文件存在，则不会返回任何结果。
+    // 如果文件不存在，则才会返回一个错误！因此exists为true时，表示文件不存在！
     // 获取当前文件所在目录
     console.log(path.resolve(__dirname + "/" + data.id + ".json"));
 
@@ -165,7 +165,7 @@ router.post("/api/update", function (req, res) {
     fs.access(__dirname + "/" + data.id + ".json", function (exists) {
         console.log(__dirname + "/" + data.id + ".json");
         if (!exists) {
-            // 数据存在，更新文件
+            // 数据存在，更新文件，这里之应该更新有变化的项，没变化的字段不更新
             fs.writeFile(__dirname + "/" + data.id + ".json", JSON.stringify(data), function (err) {
                 if (err) {
                     console.log(err);
@@ -305,6 +305,10 @@ router.get("/api/find/:id", function (req, res) {
 });
 
 // TODO: 高内聚低耦合，可以抽象出来代码重用，例如上面减少重复代码，如读取文件，转换为JSON格式，返回数据等
+// 几个问题：
+// 1、代码没有考虑文件已存在的情况，如果客户端重复提交数据，文件会被覆盖。
+// 2、代码没有使用 Promise 来管理异步操作，可以使用 async/await 来改进代码的可读性。
+// 3、代码没有提供路由参数，无法处理单独的文件。
 
 // 监听端口，这里以localhost的1337端口为例
 app.listen(app.get('port'), () => {
