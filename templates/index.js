@@ -55,10 +55,10 @@ function check() {
         var phone = document.getElementById("inputPhone3").value;
         var hobby = document.getElementById("inputHobby3").value;
 
-        // 把数据按照collection.js中的格式打包为json，传递到后台
+        // 把数据按照collection.js中的格式打包为json，传递到后台，注意json字段名要有双引号！！！
         var data = {
             "name": name,
-            "stuId": stuId,
+            "id": stuId,
             "email": email,
             "phone": phone,
             "hobby": hobby
@@ -76,7 +76,7 @@ function check() {
             data: JSON.stringify(data), // 将json数据转换为字符串，传递给后台，后台再转换为json格式
             // {
             //     "name": "张三",
-            //     "stuId": "123456",
+            //     "id": "123456",
             //     "email": "zhangsan@example.com",
             //     "phone": "13000000000",
             //     "hobby": "篮球"

@@ -1,1 +1,7 @@
-{"name":"测试","stuId":"2222222222","email":"test@whu.edu.cn","phone":"13245780872","hobby":"222"}
+{
+    "name": "测试",
+    "id": "2222222222",
+    "email": "test@whu.edu.cn",
+    "phone": "13245780872",
+    "hobby": "222"
+}

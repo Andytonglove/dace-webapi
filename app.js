@@ -2,6 +2,7 @@
 const express = require('express');
 const app = express();
 const fs = require("fs");
+const program = require('commander');
 
 // 引入cors库
 const cors = require("cors");
@@ -30,7 +31,7 @@ const router = express.Router();
 // 使用router
 app.use(router);
 
-// 网页端
+// 网页端，下面是APIs接口
 
 // /api/submit接口
 router.post("/api/submit", function (req, res) {
@@ -39,7 +40,7 @@ router.post("/api/submit", function (req, res) {
     // 把数据按照collection.js中的格式打包为json，传递到后台
     // 把json数据写入json文件
     console.log(data);
-    fs.writeFile(__dirname + "/" + data.stuId + ".json", JSON.stringify(data), function (err) {
+    fs.writeFile(__dirname + "/" + data.id + ".json", JSON.stringify(data), function (err) {
         if (err) {
             console.log(err);
             res.json({
@@ -145,41 +146,41 @@ router.post("/api/delete", function (req, res) {
     });
 });
 
-// /api/put接口，更新一项数据：修改
-router.post("/api/put", function (req, res) {
+// /api/update接口，更新一项数据：修改
+router.post("/api/update", function (req, res) {
     // 例如：全部的请求为：http://localhost:3000/api/put?data={"id":"1","name":"张三","age":"18"}
     var data = req.body.data;
     // 判断数据是否存在
-    fs.access
-        (__dirname + "/" + data.id + ".json", function (exists) {
-            if (exists) {
-                // 数据存在，更新文件
-                fs.writeFile(__dirname + "/" + data.id + ".json", JSON.stringify(data), function (err) {
-                    if (err) {
-                        console.log(err);
-                        res.json({
-                            status: 500,
-                            message: "更新失败"
-                        });
-                    } else {
-                        res.json({
-                            status: 200,
-                            message: "更新成功"
-                        });
-                    }
-                });
-            } else {
-                // 数据不存在
-                res.json({
-                    status: 500,
-                    message: "条目不存在"
-                });
-            }
-        });
+    fs.access(__dirname + "/" + data.id + ".json", function (exists) {
+        if (exists) {
+            // 数据存在，更新文件
+            fs.writeFile(__dirname + "/" + data.id + ".json", JSON.stringify(data), function (err) {
+                if (err) {
+                    console.log(err);
+                    res.json({
+                        status: 500,
+                        message: "更新失败"
+                    });
+                } else {
+                    res.json({
+                        status: 200,
+                        message: "更新成功"
+                    });
+                }
+            });
+        } else {
+            // 数据不存在
+            res.json({
+                status: 500,
+                message: "条目不存在"
+            });
+        }
+    });
 });
 
 // delete/:id请求，删除某一项数据
 router.delete("/api/delete/:id", function (req, res) {
+    // 请求体结构应该为：{data: {id: "xxx"}}
     var id = req.params.id;
     // 例如：/api/delete/1
     // 判断数据是否存在
@@ -258,26 +259,67 @@ router.get("/api/list", function (req, res) {
     });
 });
 
-// TODO: 代码中有很多重复的代码，可以抽象出来，减少重复代码，如读取文件，转换为JSON格式，返回数据等
+// 输出某一项条目的详细信息：详情：api/find/:id
+router.get("/api/find/:id", function (req, res) {
+    var id = req.params.id;
+    // 例如：/api/find/1
+    // 判断数据是否存在
+    fs.access(__dirname + "/" + id + ".json", function (exists) {
+        if (exists) {
+            // 数据存在，读取文件
+            fs.readFile(__dirname + "/" + id + ".json", "utf-8", function (err, data) {
+                if (err) {
+                    console.log(err);
+                    res.json({
+                        status: 500,
+                        message: "读取失败"
+                    });
+                } else {
+                    res.json({
+                        status: 200,
+                        message: "读取成功",
+                        data: JSON.parse(data)
+                    });
+                }
+            });
+        } else {
+            // 数据不存在
+            res.json({
+                status: 500,
+                message: "条目不存在"
+            });
+        }
+    });
+});
 
+// TODO: 高内聚低耦合，可以抽象出来代码重用，例如上面减少重复代码，如读取文件，转换为JSON格式，返回数据等
 
 // 监听端口，这里以localhost的1337端口为例
 app.listen(app.get('port'), () => {
     console.log('Server listening on: http://localhost:', app.get('port'));
 });
 
+// 上面的代码是服务端的代码，下面是APP端的代码
 
-// APP
 
-// 对应上面的API，提供APP端的命令行操作
-const program = require('commander');
-// 编写支持命令行的api
+// 以下是APP端的代码
+
+// 对应上面的API，提供APP端的命令行操作，这里命令行操作实现可以直接调用上面的API
+// 长、短项：单「-」代表短选项，双「--」代表长选项。长短项表示的效果相同，可随意选择使⽤
+// 联合选项：-u id {-n｜-i|-m|-b}, 即-u选项必须附带最少后⾯的四个选项之⼀才
+// 能工作，否则警告提示 - a { -n - i - m - b }, 即 - a选项必须同时附带后面的4个选项才能工作，否则警告提示
 program
     .version('0.0.1')
+    .description('An app Personal Information Collection System')
     .option('-a, --add', 'add a new item')
     .option('-u, --update', 'update an item')
     .option('-d, --delete', 'delete an item')
     .option('-l, --list', 'list all items')
+    .option('-n, --name', 'add a new name')
+    .option('-i, --id', 'add a new id')
+    .option('-m, --mobile', 'add a new mobile')
+    .option('-b, --hobby', 'add a new hobby')
+    .option('-e, --email', 'add a new email')
     .parse(process.argv);
 
 // 如果没有输入命令，提示用户输入命令
@@ -287,14 +329,137 @@ if (!process.argv.slice(2).length) {
 
 // 如果输入了命令，执行对应的命令
 if (program.add) {
-    console.log('add');
+    // 添加条目，读取--name、--id、--mobile、--hobby、--email参数，支持短参数和长参数，以及中文
+    var name = program.name;
+    var id = program.id;
+    var mobile = program.mobile;
+    var hobby = program.hobby;
+    var email = program.email;
+    // 如果没有输入参数，提示用户输入参数
+    if (!name || !id || !mobile || !hobby || !email) {
+        console.log('请输入参数');
+        return;
+    }
+    // 使用request模块发送POST请求，添加条目，调用上面服务端的API：
+    request.post({
+        url: 'http://localhost:1337/api/add',
+        form: {
+            name: name,
+            id: id,
+            mobile: mobile,
+            hobby: hobby,
+            email: email
+        }
+    }, function (err, httpResponse, body) {
+        if (err) {
+            console.log('添加失败');
+        } else {
+            console.log('添加成功');
+        }
+    });
+} else if (program.update) {
+    // 更新条目，读取--name、--id、--mobile、--hobby、--email参数
+    var name = program.name;
+    var id = program.id;
+    var mobile = program.mobile;
+    var hobby = program.hobby;
+    var email = program.email;
+    // 如果没有输入参数，提示用户输入参数
+    if (!name || !id || !mobile || !hobby || !email) {
+        console.log('请输入参数');
+        return;
+    }
+    // 使用request模块发送POST请求，更新条目，只更新新输入的参数，调用上面服务端的API：
+    request.post({
+        url: 'http://localhost:1337/api/update',
+        form: {
+            name: name,
+            id: id,
+            mobile: mobile,
+            hobby: hobby,
+            email: email
+        }
+    }, function (err, httpResponse, body) {
+        if (err) {
+            console.log('更新失败');
+        } else {
+            console.log('更新成功');
+        }
+    });
+} else if (program.delete) {
+    // 删除条目，读取--id参数
+    var id = program.id;
+    // 如果没有输入参数，提示用户输入参数
+    if (!id) {
+        console.log('请输入参数');
+        return;
+    }
+    // 使用request模块发送POST请求，删除条目
+    request.post({
+        url: 'http://localhost:1337/api/delete',
+        form: {
+            id: id
+        }
+    }, function (err, httpResponse, body) {
+        if (err) {
+            console.log('删除失败');
+        } else {
+            console.log('删除成功');
+        }
+    });
+} else if (program.list) {
+    // 调用上面服务端的API：api/list，列出所有条目
+    var sort = program.sort;
+    // 如果没有输入参数，按照原始顺序列出所有条目
+    if (!sort) {
+        // 使用request模块发送GET请求，列出所有条目
+        request.get('http://localhost:1337/api/list', function (err, httpResponse, body) {
+            if (err) {
+                console.log('列出失败');
+            } else {
+                console.log(body);
+            }
+        });
+    } else if (sort === 'asc') {
+        // 使用request模块发送GET请求，列出所有条目
+        request.get('http://localhost:1337/api/list?sort=asc', function (err, httpResponse, body) {
+            if (err) {
+                console.log('列出失败');
+            } else {
+                console.log(body);
+            }
+        });
+    } else if (sort === 'desc') {
+        // 使用request模块发送GET请求，列出所有条目
+        request.get('http://localhost:1337/api/list?sort=desc', function (err, httpResponse, body) {
+            if (err) {
+                console.log('列出失败');
+            } else {
+                console.log(body);
+            }
+        });
+    } else {
+        console.log('请输入正确的参数');
+    }
+} else if (program.find) {
+    // 查找条目，读取--id参数
+    var id = program.id;
+    // 如果没有输入参数，提示用户输入参数
+    if (!id) {
+        console.log('请输入参数');
+        return;
+    }
+    // 使用request模块发送GET请求，查找条目
+    request.get('http://localhost:1337/api/find?id=' + id, function (err, httpResponse, body) {
+        if (err) {
+            console.log('查找失败');
+        } else {
+            console.log(body);
+        }
+    });
+} else {
+    console.log('请输入正确的参数');
 }
-if (program.update) {
-    console.log('update');
-}
-if (program.delete) {
-    console.log('delete');
-}
-if (program.list) {
-    console.log('list');
-}
+
+// 以上是APP端的代码
+
