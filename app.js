@@ -33,10 +33,11 @@ app.use(router);
 
 // 网页端，下面是APIs接口
 
-// /api/submit接口
+// /api/submit接口 √
 router.post("/api/submit", function (req, res) {
     console.log("submit");
     var data = req.body;
+    console.log(data);
     // 把数据按照collection.js中的格式打包为json，传递到后台
     // 把json数据写入json文件
     console.log(data);
@@ -56,7 +57,7 @@ router.post("/api/submit", function (req, res) {
     });
 });
 
-// /api/show接口
+// /api/show接口 √
 router.get("/api/show", function (req, res) {
     console.log("show");
     // 从json文件中读取所有文件的数据
@@ -82,7 +83,7 @@ router.get("/api/show", function (req, res) {
     });
 });
 
-// /api/add接口，增加一项数据：新增
+// /api/add接口，增加一项数据：新增，和submit重合
 router.post("/api/add", function (req, res) {
     // 请求格式为：{data: {id: "xxx", name: "xxx", ...}}
     var data = req.body.data;
@@ -116,8 +117,12 @@ router.post("/api/add", function (req, res) {
 
 // /api/delete接口，删除一项数据：删除
 router.post("/api/delete", function (req, res) {
-    var data = req.body.data;
-    // 请求格式为：{data: {id: "xxx"}}
+    var data = req.body; // 请求格式为：{"id": xxx}
+    console.log(data);
+
+    // 获取请求体中的id，请求体为字符串，即使是json格式，需要转换为json对象
+    // data = JSON.parse(data);
+
     // 判断数据是否存在
     fs.access(__dirname + "/" + data.id + ".json", function (exists) {
         if (exists) {
@@ -127,12 +132,12 @@ router.post("/api/delete", function (req, res) {
                     console.log(err);
                     res.json({
                         status: 500,
-                        message: "删除失败"
+                        message: "删除失败" + __dirname + "/" + data.id + ".json" + err.message
                     });
                 } else {
                     res.json({
                         status: 200,
-                        message: "删除成功"
+                        message: "删除成功" + __dirname + "/" + data.id + ".json"
                     });
                 }
             });
@@ -140,7 +145,7 @@ router.post("/api/delete", function (req, res) {
             // 数据不存在
             res.json({
                 status: 500,
-                message: "条目不存在"
+                message: "条目不存在，为" + __dirname + "/" + data.id + ".json"
             });
         }
     });
@@ -152,6 +157,7 @@ router.post("/api/update", function (req, res) {
     var data = req.body.data;
     // 判断数据是否存在
     fs.access(__dirname + "/" + data.id + ".json", function (exists) {
+        console.log(__dirname + "/" + data.id + ".json");
         if (exists) {
             // 数据存在，更新文件
             fs.writeFile(__dirname + "/" + data.id + ".json", JSON.stringify(data), function (err) {
