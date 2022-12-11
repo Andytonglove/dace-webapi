@@ -21,9 +21,7 @@ function isValidId(id) {
 // 互斥选项：-a | -d | -u | -l ,即该4个选项只能同时选择⼀个。如果选择多个，警告提示
 // 以上选项，均为非强制选项（即：如果运行时无选项，则按照「 --list=descend」操作（因为这是⼀个安全操作）
 
-
-// command和option的区别：command是命令，option是选项
-// 用option的方式实现上面的功能，问题是在输入了正确参数的情况下仍报错请输入正确的参数，为什么
+// command和option的区别：command是命令，option是选项，这里用option的方式实现上面的功能
 program
     .version('0.0.1')
     .description('An app of Personal Information Collection System')
@@ -142,6 +140,10 @@ if (program.add) {
 } else if (program.delete) {
     // 删除条目，读取--id参数
     var id = program.id;
+    if (!isValidId(id)) {
+        console.log('参数不合法');
+        return;
+    }
     // 如果没有输入参数，提示用户输入参数
     if (!id) {
         console.log('请输入参数');
@@ -193,6 +195,10 @@ if (program.add) {
         console.log('请输入参数');
         return;
     }
+    if (!isValidId(id)) {
+        console.log('参数不合法');
+        return;
+    }
     // 使用request模块发送GET请求，查找条目
     request.get('http://localhost:1337/api/find?id=' + id, function (err, httpResponse, body) {
         if (err) {
@@ -202,7 +208,7 @@ if (program.add) {
         }
     });
 } else {
-    console.log('请输入正确的参数');
+    console.log('请输入正确的命令行参数，可通过 node app -h 查看帮助');
 }
 
 // 以上是APP端的代码
