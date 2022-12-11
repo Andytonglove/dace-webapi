@@ -1,3 +1,6 @@
+// 说明：本api.js为后台接口，用于接收前端或APP端的请求，返回数据
+// 启动服务器：node api.js即可
+
 // 创建一个服务器
 const express = require('express');
 const app = express();
