@@ -20,7 +20,7 @@ function checkId() {
 // 对index.html中的手机号码进行正则表达式检查
 function checkPhone() {
     var phone = document.getElementById("inputPhone3").value;
-    var reg = /^1[34578]\d{9}$/;
+    var reg = /^1[3456789]\d{9}$/;
     if (reg.test(phone)) {
         document.getElementById("inputPhone3").style.borderColor = "green";
         return true;
