@@ -163,7 +163,7 @@ router.post("/api/delete", function (req, res) {
 });
 
 // /api/update接口，更新修改一项数据，即updateById √
-router.post("/api/update", function (req, res) {
+router.put("/api/update", function (req, res) {
     // 例如：全部的请求为：http://localhost:3000/api/put?data={"id":"1","name":"张三","age":"18"}
     var data = req.body;
     // console.log(data);
@@ -304,7 +304,7 @@ router.get("/api/list", function (req, res) {
                         list.push(JSON.parse(data));
                         // 如果list数组的长度和files数组的长度相同，说明所有文件都已经读取完毕
                         if (list.length == files.length) {
-                            // 如果有排序方式，按照排序方式排序
+                            // 如果有排序方式，按照排序方式的要求，对id进行排序，输出list数组
                             if (sort) {
                                 list.sort(function (a, b) {
                                     return sort == "asc" ? a.id - b.id : b.id - a.id;

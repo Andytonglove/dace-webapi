@@ -169,8 +169,8 @@ if (options.add) {
 
     console.log('更新条目：' + name + ' ' + id + ' ' + email + ' ' + phone + ' ' + hobby);
 
-    // 使用request模块发送POST请求，更新条目，只更新新输入的参数，调用上面服务端的API：
-    request.post({
+    // 使用request模块发送POST/PUT请求，更新条目，只更新新输入的参数，调用上面服务端的API：
+    request.put({
         url: 'http://localhost:1337/api/update',
         body: JSON.stringify(data),
         headers: {
@@ -283,7 +283,7 @@ if (options.add) {
         });
     }
     // 输入参数为空，按照des安全选项列出所有条目
-    else if (!sort) {
+    else if (sort === undefined) {
         // 使用request模块发送GET请求，列出所有条目
         request.get('http://localhost:1337/api/list?sort=desc', function (err, httpResponse, body) {
             if (err) {
