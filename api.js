@@ -25,6 +25,7 @@ app.use(cors({
 }));
 
 var bodyParser = require("body-parser");
+const { ChildProcess } = require('child_process');
 app.use(bodyParser.json());
 
 app.set('port', process.env.PORT || 1337);  // 设置端口号，同机需要与前端可以不一致
@@ -165,7 +166,7 @@ router.post("/api/delete", function (req, res) {
 router.post("/api/update", function (req, res) {
     // 例如：全部的请求为：http://localhost:3000/api/put?data={"id":"1","name":"张三","age":"18"}
     var data = req.body;
-    console.log(data);
+    // console.log(data);
     // 判断数据是否存在
     fs.access(__dirname + "/" + data.id + ".json", function (exists) {
         console.log(__dirname + "/" + data.id + ".json");
@@ -182,9 +183,9 @@ router.post("/api/update", function (req, res) {
                 } else {
                     // dataOld为buffer类型，需要转换为json对象
                     dataOld = JSON.parse(dataOld);
-                    console.log(dataOld);
-                    // 转换为json对象
-                    var dataJson = JSON.stringify(data);
+                    var dataJson = data;
+                    console.log(dataJson);
+
                     // id字段不更新
                     dataJson.id = dataOld.id;
 
@@ -215,10 +216,8 @@ router.post("/api/update", function (req, res) {
                         dataJson.email = dataOld.email;
                     }
 
-                    // 把json对象转换为字符串
-                    dataString = JSON.parse(dataJson);
                     // 更新文件
-                    fs.writeFile(__dirname + "/" + data.id + ".json", JSON.stringify(dataString), function (err) {
+                    fs.writeFile(__dirname + "/" + data.id + ".json", JSON.stringify(dataJson), function (err) {
                         if (err) {
                             console.log(err);
                             res.json({
