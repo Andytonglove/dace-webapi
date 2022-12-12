@@ -171,18 +171,66 @@ router.post("/api/update", function (req, res) {
         console.log(__dirname + "/" + data.id + ".json");
         if (!exists) {
             // 数据存在，更新文件，这里之应该更新有变化的项，没变化的字段不更新
-            // TODO：读取文件，获取原始数据，然后更新
-            fs.writeFile(__dirname + "/" + data.id + ".json", JSON.stringify(data), function (err) {
+            // TODO：读取文件，获取原始数据为dataOld，然后更新
+            fs.readFile(__dirname + "/" + data.id + ".json", function (err, dataOld) {
                 if (err) {
                     console.log(err);
                     res.json({
                         status: 500,
-                        message: "更新失败"
+                        message: "更新失败 读取文件失败"
                     });
                 } else {
-                    res.json({
-                        status: 200,
-                        message: "更新成功"
+                    // dataOld为buffer类型，需要转换为json对象
+                    dataOld = JSON.parse(dataOld);
+                    console.log(dataOld);
+                    // 转换为json对象
+                    var dataJson = JSON.stringify(data);
+                    // id字段不更新
+                    dataJson.id = dataOld.id;
+
+                    // 更新数据，先判断是否有变化，且是否有传入，有变化有传入才更新
+                    if (dataJson.name !== dataOld.name && dataJson.name) {
+                        dataJson.name = dataJson.name;
+                    } else {
+                        // 未传入name字段，不更新，使用原来的name
+                        dataJson.name = dataOld.name;
+                    }
+
+                    // 同理，对phone、hobby、email字段进行更新，这里逻辑还存在问题，待优化
+                    if (dataJson.phone !== dataOld.phone && dataJson.phone) {
+                        dataJson.phone = dataJson.phone;
+                    } else {
+                        dataJson.phone = dataOld.phone;
+                    }
+
+                    if (dataJson.hobby !== dataOld.hobby && dataJson.hobby) {
+                        dataJson.hobby = dataJson.hobby;
+                    } else {
+                        dataJson.hobby = dataOld.hobby;
+                    }
+
+                    if (dataJson.email !== dataOld.email && dataJson.email) {
+                        dataJson.email = dataJson.email;
+                    } else {
+                        dataJson.email = dataOld.email;
+                    }
+
+                    // 把json对象转换为字符串
+                    dataString = JSON.parse(dataJson);
+                    // 更新文件
+                    fs.writeFile(__dirname + "/" + data.id + ".json", JSON.stringify(dataString), function (err) {
+                        if (err) {
+                            console.log(err);
+                            res.json({
+                                status: 500,
+                                message: "更新失败 写入文件失败"
+                            });
+                        } else {
+                            res.json({
+                                status: 200,
+                                message: "更新成功"
+                            });
+                        }
                     });
                 }
             });
@@ -210,7 +258,7 @@ router.delete("/api/delete/:id", function (req, res) {
                     console.log(err);
                     res.json({
                         status: 500,
-                        message: "删除失败"
+                        message: "删除失败 读取文件失败"
                     });
                 } else {
                     res.json({

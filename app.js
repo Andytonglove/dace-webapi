@@ -26,10 +26,10 @@ function isValidId(id) {
 program
     .version('0.0.1')
     .description('An app of Personal Information Collection System')
-    .option('-a, --add', 'add a new item', { conflicts: ['u', 'd', 'l'] })
-    .option('-u, --update', 'update an item', { conflicts: ['a', 'd', 'l'] })
-    .option('-d, --delete <id>', 'delete an item', { conflicts: ['a', 'u', 'l'] })
-    .option('-l, --list [sort]', 'list all items', 'descend', { conflicts: ['a', 'u', 'd'] })
+    .option('-a, --add', 'add a new item')
+    .option('-u, --update', 'update an item')
+    .option('-d, --delete <id>', 'delete an item')
+    .option('-l, --list [sort]', 'list all items')
     .option('-f, --find <id>', 'find an item')
     .option('-n, --name <name>', 'add a new name')
     .option('-i, --id <id>', 'add a new id')
@@ -40,15 +40,18 @@ program
 
 var options = program.opts(); // 获取命令行参数，这句话一定要！！！
 
-// 如果没有输入命令，则默认输出帮助信息，TODO：也可按照「 --list=descend」操作
-if (!process.argv.slice(2).length) {
-    program.outputHelp();
+// console.log(options);
+// 将options转换为字符串
+var optionsStr = JSON.stringify(options);
+// 查找optionsStr字符串中是否包含互斥的几个字符，字符串处理的写法不会存在位置问题
+if (optionsStr.includes('add') + optionsStr.includes('delete') + optionsStr.includes('update') + optionsStr.includes('list') > 1) {
+    console.log('互斥选项：-a | -d | -u | -l ,即该4个选项只能同时选择⼀个。');
     process.exit(1);
 }
 
-// 互斥选项：当选择-a、-u、-d、-l选项时，只能选择其中一个，否则警告提示
-if ((options.add && options.update) || (options.add && options.delete) || (options.add && options.list) || (options.update && options.delete) || (options.update && options.list) || (options.delete && options.list)) {
-    console.log('互斥选项：-a | -d | -u | -l ,即该4个选项只能同时选择⼀个。');
+// 如果没有输入命令，则默认输出帮助信息，TODO：也可按照「 --list=descend」操作
+if (!process.argv.slice(2).length) {
+    program.outputHelp();
     process.exit(1);
 }
 
@@ -117,7 +120,7 @@ if (options.add) {
                 console.log('添加失败 ' + body.message);
                 return;
             } else {
-                console.log('添加条目：' + name + ' ' + id + ' ' + email + ' ' + mobile + ' ' + hobby);
+                console.log('添加条目：' + name + ' ' + id + ' ' + email + ' ' + phone + ' ' + hobby);
                 console.log('添加成功 ' + body.message);
             }
         }
@@ -129,7 +132,7 @@ if (options.add) {
     // 更新条目，读取--name、--id、--mobile、--hobby、--email参数
     var name = options.name;
     var id = options.id;
-    var mobile = options.mobile;
+    var phone = options.mobile;
     var hobby = options.hobby;
     var email = options.email;
 
@@ -153,9 +156,9 @@ if (options.add) {
             return;
         }
     }
-    if (mobile) {
+    if (phone) {
         data.phone = mobile;
-        if (!isValidMobile(mobile)) {
+        if (!isValidMobile(phone)) {
             console.log('参数不合法');
             return;
         }
@@ -164,7 +167,7 @@ if (options.add) {
         data.hobby = hobby;
     }
 
-    console.log('更新条目：' + name + ' ' + id + ' ' + email + ' ' + mobile + ' ' + hobby);
+    console.log('更新条目：' + name + ' ' + id + ' ' + email + ' ' + phone + ' ' + hobby);
 
     // 使用request模块发送POST请求，更新条目，只更新新输入的参数，调用上面服务端的API：
     request.post({
@@ -177,7 +180,15 @@ if (options.add) {
         if (err) {
             console.log('更新失败');
         } else {
-            console.log('更新成功');
+            // 返回的body是字符串，需要转换成对象，否则无法访问对象的属性
+            body = JSON.parse(body);
+            if (body.status === 500) {
+                console.log('更新失败 ' + body.message);
+                return;
+            }
+            else if (body.status === 200) {
+                console.log('更新成功 ' + body.message);
+            }
         }
     });
 
@@ -246,7 +257,7 @@ if (options.add) {
     var sort = options.list;
     // 如果没有输入参数，按照des列出所有条目
 
-    console.log('列出条目：' + sort);
+    console.log('列出条目方式：' + sort);
 
     if (sort === 'ascend' || sort === 'asc') {
         // 使用request模块发送GET请求，列出所有条目
@@ -287,7 +298,7 @@ if (options.add) {
     }
 
 } else {
-    // 为什么直接跳到这里？因为没获取到命令行参数
+    // 为什么直接跳到这里？因为没获取到命令行参数，需要opts
     console.log('请输入正确的命令行参数，可通过 node app -h 查看帮助');
 }
 
