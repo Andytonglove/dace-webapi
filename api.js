@@ -161,15 +161,17 @@ router.post("/api/delete", function (req, res) {
     });
 });
 
-// /api/update接口，更新一项数据：修改
+// /api/update接口，更新修改一项数据，即updateById √
 router.post("/api/update", function (req, res) {
     // 例如：全部的请求为：http://localhost:3000/api/put?data={"id":"1","name":"张三","age":"18"}
-    var data = req.body.data;
+    var data = req.body;
+    console.log(data);
     // 判断数据是否存在
     fs.access(__dirname + "/" + data.id + ".json", function (exists) {
         console.log(__dirname + "/" + data.id + ".json");
         if (!exists) {
             // 数据存在，更新文件，这里之应该更新有变化的项，没变化的字段不更新
+            // TODO：读取文件，获取原始数据，然后更新
             fs.writeFile(__dirname + "/" + data.id + ".json", JSON.stringify(data), function (err) {
                 if (err) {
                     console.log(err);
@@ -194,7 +196,7 @@ router.post("/api/update", function (req, res) {
     });
 });
 
-// delete/:id请求，删除某一项数据 √
+// delete/:id请求，删除某一项数据，即deleteById √
 router.delete("/api/delete/:id", function (req, res) {
     // 请求体结构应该为：{data: {id: "xxx"}}
     var id = req.params.id;
@@ -227,7 +229,7 @@ router.delete("/api/delete/:id", function (req, res) {
     });
 });
 
-// 输出所有条目列表，可以指定按时间升序或降序排列：列表
+// 输出所有条目列表，可以指定按时间升序或降序排列：列表 √
 router.get("/api/list", function (req, res) {
     var sort = req.query.sort; // 获取排序方式，升序或降序
     // 例如：http://localhost:3000/api/list?sort=asc
@@ -307,6 +309,9 @@ router.get("/api/find/:id", function (req, res) {
         }
     });
 });
+
+// TODO：支持模板文件的增加、修改的接口
+
 
 // TODO: 优化，高内聚低耦合，可以抽象出来代码重用，例如上面减少重复代码，如读取文件，转换为JSON格式，返回数据等
 // 几个主要问题：

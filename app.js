@@ -26,10 +26,10 @@ function isValidId(id) {
 program
     .version('0.0.1')
     .description('An app of Personal Information Collection System')
-    .option('-a, --add', 'add a new item')
-    .option('-u, --update', 'update an item')
-    .option('-d, --delete <id>', 'delete an item')
-    .option('-l, --list [sort]', 'list all items', /^(ascend|descend)$/i, 'descend')
+    .option('-a, --add', 'add a new item', { conflicts: ['u', 'd', 'l'] })
+    .option('-u, --update', 'update an item', { conflicts: ['a', 'd', 'l'] })
+    .option('-d, --delete <id>', 'delete an item', { conflicts: ['a', 'u', 'l'] })
+    .option('-l, --list [sort]', 'list all items', 'descend', { conflicts: ['a', 'u', 'd'] })
     .option('-f, --find <id>', 'find an item')
     .option('-n, --name <name>', 'add a new name')
     .option('-i, --id <id>', 'add a new id')
@@ -46,9 +46,9 @@ if (!process.argv.slice(2).length) {
     process.exit(1);
 }
 
-// 互斥选项：-a | -d | -u | -l ,即该4个选项只能同时选择⼀个。如果选择多个，警告提示
-if ((options.add && options.delete) || (options.add && options.update) || (options.add && options.list) || (options.delete && options.update) || (options.delete && options.list) || (options.update && options.list)) {
-    console.log('互斥选项：-a | -d | -u | -l ,即该4个选项只能同时选择⼀个');
+// 互斥选项：当选择-a、-u、-d、-l选项时，只能选择其中一个，否则警告提示
+if ((options.add && options.update) || (options.add && options.delete) || (options.add && options.list) || (options.update && options.delete) || (options.update && options.list) || (options.delete && options.list)) {
+    console.log('互斥选项：-a | -d | -u | -l ,即该4个选项只能同时选择⼀个。');
     process.exit(1);
 }
 
@@ -133,17 +133,35 @@ if (options.add) {
     var hobby = options.hobby;
     var email = options.email;
 
-    data = {
-        "name": name,
-        "id": id,
-        "email": email,
-        "phone": mobile,
-        "hobby": hobby
-    };
+    data = {};
 
-    if (!isValidId(id) || !isValidMobile(mobile) || !isValidEmail(email)) {
-        console.log('参数不合法');
-        return;
+    // 检查是否有值，如果有值则添加到数据对象中
+    if (name) {
+        data.name = name;
+    }
+    if (id) {
+        data.id = id;
+        if (!isValidId(id)) {
+            console.log('参数不合法');
+            return;
+        }
+    }
+    if (email) {
+        data.email = email;
+        if (!isValidEmail(email)) {
+            console.log('参数不合法');
+            return;
+        }
+    }
+    if (mobile) {
+        data.phone = mobile;
+        if (!isValidMobile(mobile)) {
+            console.log('参数不合法');
+            return;
+        }
+    }
+    if (hobby) {
+        data.hobby = hobby;
     }
 
     console.log('更新条目：' + name + ' ' + id + ' ' + email + ' ' + mobile + ' ' + hobby);
@@ -218,7 +236,7 @@ if (options.add) {
                 return;
             } else {
                 console.log('查找成功');
-                console.log('查找结果：' + body.data.name + ' ' + body.data.id + ' ' + body.data.email + ' ' + body.data.mobile + ' ' + body.data.hobby);
+                console.log('查找结果：' + body.data.name + ' ' + body.data.id + ' ' + body.data.email + ' ' + body.data.phone + ' ' + body.data.hobby);
             }
         }
     });
@@ -230,7 +248,7 @@ if (options.add) {
 
     console.log('列出条目：' + sort);
 
-    if (sort === 'ascend') {
+    if (sort === 'ascend' || sort === 'asc') {
         // 使用request模块发送GET请求，列出所有条目
         request.get('http://localhost:1337/api/list?sort=asc', function (err, httpResponse, body) {
             if (err) {
@@ -242,7 +260,7 @@ if (options.add) {
                 console.log(body.data);
             }
         });
-    } else if (sort === 'descend') {
+    } else if (sort === 'descend' || sort === 'desc') {
         // 使用request模块发送GET请求，列出所有条目
         request.get('http://localhost:1337/api/list?sort=desc', function (err, httpResponse, body) {
             if (err) {
