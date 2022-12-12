@@ -47,7 +47,7 @@ if (!process.argv.slice(2).length) {
 }
 
 // 互斥选项：-a | -d | -u | -l ,即该4个选项只能同时选择⼀个。如果选择多个，警告提示
-if (options.add + options.delete + options.update + options.list > 1) {
+if ((options.add && options.delete) || (options.add && options.update) || (options.add && options.list) || (options.delete && options.update) || (options.delete && options.list) || (options.update && options.list)) {
     console.log('互斥选项：-a | -d | -u | -l ,即该4个选项只能同时选择⼀个');
     process.exit(1);
 }
@@ -83,6 +83,14 @@ if (options.add) {
     var hobby = options.hobby;
     var email = options.email;
 
+    data = {
+        "name": name,
+        "id": id,
+        "email": email,
+        "phone": mobile,
+        "hobby": hobby
+    };
+
     // 参数校验，如果参数不合法，则直接退出
     if (!isValidId(id) || !isValidMobile(mobile) || !isValidEmail(email)) {
         console.log('参数不合法');
@@ -93,19 +101,12 @@ if (options.add) {
     request.post({
         url: 'http://localhost:1337/api/add',
         // form和data都可以，但是form是表单提交，data是json提交
-        // 服务器端req.body为空，body-parser中间件不起作用，需要使用qs.stringify()方法
-        data: JSON.stringify({
-            "name": name,
-            "id": id,
-            "email": email,
-            "phone": mobile,
-            "hobby": hobby
-        }),
+        // 服务器端req.body为空，这里用到的就是data传值！！！
+        body: JSON.stringify(data),
         headers: {
             // application/x-www-form-urlencoded用于post请求，application/json用于get请求
             'Content-Type': 'application/json'
         }
-
     }, function (err, httpResponse, body) {
         if (err) {
             console.log('添加失败 ' + err);
@@ -132,6 +133,14 @@ if (options.add) {
     var hobby = options.hobby;
     var email = options.email;
 
+    data = {
+        "name": name,
+        "id": id,
+        "email": email,
+        "phone": mobile,
+        "hobby": hobby
+    };
+
     if (!isValidId(id) || !isValidMobile(mobile) || !isValidEmail(email)) {
         console.log('参数不合法');
         return;
@@ -142,13 +151,10 @@ if (options.add) {
     // 使用request模块发送POST请求，更新条目，只更新新输入的参数，调用上面服务端的API：
     request.post({
         url: 'http://localhost:1337/api/update',
-        form: {
-            name: name,
-            id: id,
-            mobile: mobile,
-            hobby: hobby,
-            email: email
-        },
+        body: JSON.stringify(data),
+        headers: {
+            'Content-Type': 'application/json'
+        }
     }, function (err, httpResponse, body) {
         if (err) {
             console.log('更新失败');
@@ -178,7 +184,12 @@ if (options.add) {
             console.log('删除失败 ' + err.message);
         } else {
             body = JSON.parse(body);
-            console.log('删除成功 ' + body.message);
+            if (body.status === 500) {
+                console.log('删除失败 ' + body.message);
+                return;
+            } else {
+                console.log('删除成功 ' + body.message);
+            }
         }
     });
 

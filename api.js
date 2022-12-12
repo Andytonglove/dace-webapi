@@ -87,7 +87,7 @@ router.get("/api/show", function (req, res) {
     });
 });
 
-// /api/add接口，增加一项数据：新增一条记录
+// /api/add接口，增加一项数据：新增一条记录 √
 router.post("/api/add", function (req, res) {
     // 请求格式为：{data: {id: "xxx", name: "xxx", ...}}
     var data = req.body;
