@@ -1,0 +1,35 @@
+{
+    "collection": {
+        "version": "1.0",
+        "href": "http://localhost:1337/api/",
+        "template": {
+            "data": [
+                {
+                    "name": "name",
+                    "value": "",
+                    "prompt": "姓名"
+                },
+                {
+                    "name": "id",
+                    "value": "",
+                    "prompt": "学号"
+                },
+                {
+                    "name": "phone",
+                    "value": "",
+                    "prompt": "电话"
+                },
+                {
+                    "name": "email",
+                    "value": "",
+                    "prompt": "邮箱"
+                },
+                {
+                    "name": "hobby",
+                    "value": "",
+                    "prompt": "兴趣"
+                }
+            ]
+        }
+    }
+}
