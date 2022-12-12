@@ -29,7 +29,7 @@ program
     .option('-a, --add', 'add a new item')
     .option('-u, --update', 'update an item')
     .option('-d, --delete <id>', 'delete an item')
-    .option('-l, --list <sort>', 'list all items', 'descend')
+    .option('-l, --list [sort]', 'list all items', /^(ascend|descend)$/i, 'descend')
     .option('-f, --find <id>', 'find an item')
     .option('-n, --name <name>', 'add a new name')
     .option('-i, --id <id>', 'add a new id')
@@ -83,40 +83,47 @@ if (options.add) {
     var hobby = options.hobby;
     var email = options.email;
 
-    var data = {
-        "name": name,
-        "id": id,
-        "email": email,
-        "phone": mobile,
-        "hobby": hobby
-    };
-
     // 参数校验，如果参数不合法，则直接退出
     if (!isValidId(id) || !isValidMobile(mobile) || !isValidEmail(email)) {
         console.log('参数不合法');
         return;
     }
 
-    console.log('添加条目：' + name + ' ' + id + ' ' + email + ' ' + mobile + ' ' + hobby);
-
     // 使用request请求，添加条目，调用上面服务端的API：
     request.post({
         url: 'http://localhost:1337/api/add',
         // form和data都可以，但是form是表单提交，data是json提交
-        data: JSON.stringify(data),
+        // 服务器端req.body为空，body-parser中间件不起作用，需要使用qs.stringify()方法
+        data: JSON.stringify({
+            "name": name,
+            "id": id,
+            "email": email,
+            "phone": mobile,
+            "hobby": hobby
+        }),
         headers: {
+            // application/x-www-form-urlencoded用于post请求，application/json用于get请求
             'Content-Type': 'application/json'
         }
+
     }, function (err, httpResponse, body) {
         if (err) {
-            console.log('添加失败' + err);
+            console.log('添加失败 ' + err);
         } else {
-            console.log('添加成功' + body);
+            // 返回的body是字符串，需要转换成对象，否则无法访问对象的属性
+            body = JSON.parse(body);
+            if (body.status === 500) {
+                console.log('添加失败 ' + body.message);
+                return;
+            } else {
+                console.log('添加条目：' + name + ' ' + id + ' ' + email + ' ' + mobile + ' ' + hobby);
+                console.log('添加成功 ' + body.message);
+            }
         }
     });
 
-    // 也可使用axios请求或使用ajax请求，下面退出程序
-    process.exit(0);
+    // 也可使用axios请求或使用ajax请求，不能退出程序！因为是异步请求，如果退出程序，请求还没发出去！！！
+    // process.exit(0);
 } else if (options.update) {
     // 更新条目，读取--name、--id、--mobile、--hobby、--email参数
     var name = options.name;
@@ -142,9 +149,6 @@ if (options.add) {
             hobby: hobby,
             email: email
         },
-        headers: {
-            'Content-Type': 'application/json'
-        }
     }, function (err, httpResponse, body) {
         if (err) {
             console.log('更新失败');
@@ -152,8 +156,7 @@ if (options.add) {
             console.log('更新成功');
         }
     });
-    // 退出程序
-    process.exit(0);
+
 } else if (options.delete) {
     // 删除条目，读取id参数
     var id = options.delete;
@@ -169,52 +172,16 @@ if (options.add) {
     }
     console.log('删除条目：' + id);
 
-    // 使用request模块发送POST请求，删除条目
-    request.post({
-        url: 'http://localhost:1337/api/delete',
-        form: {
-            id: id
-        },
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    }, function (err, httpResponse, body) {
+    // 使用request模块发送请求，删除条目
+    request.delete('http://localhost:1337/api/delete/' + id, function (err, httpResponse, body) {
         if (err) {
-            console.log('删除失败');
+            console.log('删除失败' + err.message);
         } else {
-            console.log('删除成功');
+            body = JSON.parse(body);
+            console.log('删除成功' + body.message);
         }
     });
-    process.exit(0);
-} else if (options.list) {
-    // 调用上面服务端的API：api/list，列出所有条目
-    var sort = options.list;
-    // 如果没有输入参数，按照des列出所有条目
 
-    console.log('列出条目：' + sort);
-
-    if (sort === 'ascend') {
-        // 使用request模块发送GET请求，列出所有条目
-        request.get('http://localhost:1337/api/list?sort=asc', function (err, httpResponse, body) {
-            if (err) {
-                console.log('列出失败');
-            } else {
-                console.log(body);
-            }
-        });
-    } else if (sort === 'descend') {
-        // 使用request模块发送GET请求，列出所有条目
-        request.get('http://localhost:1337/api/list?sort=desc', function (err, httpResponse, body) {
-            if (err) {
-                console.log('列出失败');
-            } else {
-                console.log(body);
-            }
-        });
-    } else {
-        console.log('请输入正确的参数');
-    }
-    process.exit(0);
 } else if (options.find) {
     // 查找条目，读取find的id参数
     var id = options.find;
@@ -230,14 +197,67 @@ if (options.add) {
     }
     console.log('查找条目：' + id);
     // 使用request模块发送GET请求，查找条目
-    request.get('http://localhost:1337/api/find?id=' + id, function (err, httpResponse, body) {
+    request.get('http://localhost:1337/api/find/' + id, function (err, httpResponse, body) {
         if (err) {
             console.log('查找失败');
         } else {
-            console.log(body);
+            body = JSON.parse(body);
+
+            if (body.status === 500) {
+                console.log('查找失败 ' + body.message);
+                return;
+            } else {
+                console.log('查找成功');
+                console.log('查找结果：' + body.data.name + ' ' + body.data.id + ' ' + body.data.email + ' ' + body.data.mobile + ' ' + body.data.hobby);
+            }
         }
     });
-    process.exit(0);
+
+} else if (options.list) {
+    // 调用上面服务端的API：api/list，列出所有条目
+    var sort = options.list;
+    // 如果没有输入参数，按照des列出所有条目
+
+    console.log('列出条目：' + sort);
+
+    if (sort === 'ascend') {
+        // 使用request模块发送GET请求，列出所有条目
+        request.get('http://localhost:1337/api/list?sort=asc', function (err, httpResponse, body) {
+            if (err) {
+                console.log('列出失败');
+            } else {
+                // 返回的body是字符串，需要转换成对象，否则无法访问对象的属性
+                body = JSON.parse(body);
+                // 打印出body.data，按照表格形式组织
+                console.log(body.data);
+            }
+        });
+    } else if (sort === 'descend') {
+        // 使用request模块发送GET请求，列出所有条目
+        request.get('http://localhost:1337/api/list?sort=desc', function (err, httpResponse, body) {
+            if (err) {
+                console.log('列出失败');
+            } else {
+                body = JSON.parse(body);
+                console.log(body.data);
+            }
+        });
+    }
+    // 输入参数为空，按照des安全选项列出所有条目
+    else if (!sort) {
+        // 使用request模块发送GET请求，列出所有条目
+        request.get('http://localhost:1337/api/list?sort=desc', function (err, httpResponse, body) {
+            if (err) {
+                console.log('列出失败');
+            } else {
+                body = JSON.parse(body);
+                console.log(body.data);
+            }
+        });
+    } else {
+        console.log('请输入正确的参数');
+    }
+
 } else {
     // 为什么直接跳到这里？因为没获取到命令行参数
     console.log('请输入正确的命令行参数，可通过 node app -h 查看帮助');

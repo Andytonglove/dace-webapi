@@ -91,7 +91,7 @@ router.get("/api/show", function (req, res) {
 router.post("/api/add", function (req, res) {
     // 请求格式为：{data: {id: "xxx", name: "xxx", ...}}
     var data = req.body;
-    console.log(data);
+    console.log(req.body);
     // 判断数据是否存在
     fs.access(__dirname + "/" + data.id + ".json", function (exists) {
         if (!exists) {
@@ -227,7 +227,7 @@ router.delete("/api/delete/:id", function (req, res) {
     });
 });
 
-// 输出所有条目列表，可以指定按时间升序或降序排列：列表
+// 输出所有条目列表，可以指定按时间升序或降序排列：列表 √
 router.get("/api/list", function (req, res) {
     var sort = req.query.sort; // 获取排序方式，升序或降序
     // 例如：http://localhost:3000/api/list?sort=asc
@@ -275,7 +275,7 @@ router.get("/api/list", function (req, res) {
     });
 });
 
-// 输出某一项条目的详细信息：详情：api/find/:id
+// 输出某一项条目的详细信息：详情：api/find/:id √
 router.get("/api/find/:id", function (req, res) {
     var id = req.params.id;
     // 例如：/api/find/1
