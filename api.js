@@ -1,5 +1,5 @@
 // 说明：本api.js为后台接口，用于接收前端或APP端的请求，返回数据
-// 启动服务器：node api.js即可
+// 启动服务器：node api.js即可，数据存储在文件夹data中
 // /templates中的前端页面可直接在浏览器中打开，也可go live运行
 // app端可通过node app.js运行
 
@@ -45,7 +45,6 @@ router.post("/api/submit", function (req, res) {
     console.log(data);
     // 把数据按照collection.js中的格式打包为json，传递到后台
     // 把json数据写入json文件
-    console.log(data);
     fs.writeFile(__dirname + "/" + data.id + ".json", JSON.stringify(data), function (err) {
         if (err) {
             console.log(err);
@@ -91,7 +90,8 @@ router.get("/api/show", function (req, res) {
 // /api/add接口，增加一项数据：新增，和submit重合
 router.post("/api/add", function (req, res) {
     // 请求格式为：{data: {id: "xxx", name: "xxx", ...}}
-    var data = req.body.data;
+    var data = req.body;
+    console.log(data);
     // 判断数据是否存在
     fs.access(__dirname + "/" + data.id + ".json", function (exists) {
         if (!exists) {

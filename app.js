@@ -1,4 +1,5 @@
 const program = require('commander'); // 用于解析命令行参数的库
+const request = require('request'); // 用于发送HTTP请求的库
 
 // 以下是APP端的代码，api代码在api.js中
 
@@ -28,7 +29,7 @@ program
     .option('-a, --add', 'add a new item')
     .option('-u, --update', 'update an item')
     .option('-d, --delete <id>', 'delete an item')
-    .option('-l, --list [sort]', 'list all items', 'descend')
+    .option('-l, --list <sort>', 'list all items', 'descend')
     .option('-f, --find <id>', 'find an item')
     .option('-n, --name <name>', 'add a new name')
     .option('-i, --id <id>', 'add a new id')
@@ -37,34 +38,7 @@ program
     .option('-e, --email <email>', 'add a new email')
     .parse(process.argv);
 
-
-// 互斥选项：-a | -d | -u | -l ,即该4个选项只能同时选择⼀个。如果选择多个，警告提示
-if (program.add + program.delete + program.update + program.list > 1) {
-    console.log('互斥选项：-a | -d | -u | -l ,即该4个选项只能同时选择⼀个');
-    process.exit(1);
-}
-
-// 联合选项：当选择-a选项时，必须输入--name、--id、--mobile、--hobby、--email参数，支持短参数和长参数
-if (program.add) {
-    if (!program.name || !program.id || !program.mobile || !program.hobby || !program.email) {
-        console.log('添加条目时，必须输入--name、--id、--mobile、--hobby、--email参数');
-        process.exit(1);
-    }
-}
-
-// 联合选项：当选择-u选项时，必须输入--id参数，支持短参数和长参数，还需要至少输入一个更新参数
-if (program.update) {
-    if (!program.id) {
-        console.log('更新条目时，必须输入--id参数');
-        process.exit(1);
-    }
-    if (!program.name && !program.mobile && !program.hobby && !program.email) {
-        console.log('更新条目时，必须输入至少一个更新参数');
-        process.exit(1);
-    }
-}
-
-// 示例：node app -a -n "张三" -i "1234567890" -m "17345678901" -b "篮球" -e "zhangsan@example.com"
+var options = program.opts(); // 获取命令行参数，这句话一定要！！！
 
 // 如果没有输入命令，则默认输出帮助信息，TODO：也可按照「 --list=descend」操作
 if (!process.argv.slice(2).length) {
@@ -72,16 +46,50 @@ if (!process.argv.slice(2).length) {
     process.exit(1);
 }
 
-// 如果输入了命令，执行对应的命令
-if (program.add) {
-    // 添加条目，读取--name、--id、--mobile、--hobby、--email参数，支持短参数和长参数，以及中文
-    var name = program.name;
-    var id = program.id;
-    var mobile = program.mobile;
-    var hobby = program.hobby;
-    var email = program.email;
+// 互斥选项：-a | -d | -u | -l ,即该4个选项只能同时选择⼀个。如果选择多个，警告提示
+if (options.add + options.delete + options.update + options.list > 1) {
+    console.log('互斥选项：-a | -d | -u | -l ,即该4个选项只能同时选择⼀个');
+    process.exit(1);
+}
 
-    console.log('添加条目：' + name + ' ' + id + ' ' + mobile + ' ' + hobby + ' ' + email);
+// 联合选项：当选择-a选项时，必须输入--name、--id、--mobile、--hobby、--email参数，支持短参数和长参数
+if (options.add) {
+    if (!options.name || !options.id || !options.mobile || !options.hobby || !options.email) {
+        console.log('添加条目时，必须输入--name、--id、--mobile、--hobby、--email参数');
+        process.exit(1);
+    }
+}
+
+// 联合选项：当选择-u选项时，必须输入--id参数，支持短参数和长参数，还需要至少输入一个更新参数
+if (options.update) {
+    if (!options.id) {
+        console.log('更新条目时，必须输入--id参数');
+        process.exit(1);
+    }
+    if (!options.name && !options.mobile && !options.hobby && !options.email) {
+        console.log('更新条目时，必须输入至少一个更新参数');
+        process.exit(1);
+    }
+}
+
+// 示例：node app -a -n "张三" -i "1234567890" -m "17345678901" -b "篮球" -e "zhangsan@example.com"
+
+// 如果输入了命令，执行对应的命令
+if (options.add) {
+    // 添加条目，读取--name、--id、--mobile、--hobby、--email参数，支持短参数和长参数，以及中文
+    var name = options.name;
+    var id = options.id;
+    var mobile = options.mobile;
+    var hobby = options.hobby;
+    var email = options.email;
+
+    var data = {
+        "name": name,
+        "id": id,
+        "email": email,
+        "phone": mobile,
+        "hobby": hobby
+    };
 
     // 参数校验，如果参数不合法，则直接退出
     if (!isValidId(id) || !isValidMobile(mobile) || !isValidEmail(email)) {
@@ -89,35 +97,41 @@ if (program.add) {
         return;
     }
 
-    // 使用request模块发送POST请求，添加条目，调用上面服务端的API：
+    console.log('添加条目：' + name + ' ' + id + ' ' + email + ' ' + mobile + ' ' + hobby);
+
+    // 使用request请求，添加条目，调用上面服务端的API：
     request.post({
         url: 'http://localhost:1337/api/add',
-        // 如果使用了中文，需要设置编码格式
-        form: {
-            name: name,
-            id: id,
-            mobile: mobile,
-            hobby: hobby,
-            email: email
+        // form和data都可以，但是form是表单提交，data是json提交
+        data: JSON.stringify(data),
+        headers: {
+            'Content-Type': 'application/json'
         }
     }, function (err, httpResponse, body) {
         if (err) {
-            console.log('添加失败');
+            console.log('添加失败' + err);
         } else {
-            console.log('添加成功');
+            console.log('添加成功' + body);
         }
     });
-} else if (program.update) {
+
+    // 也可使用axios请求或使用ajax请求，下面退出程序
+    process.exit(0);
+} else if (options.update) {
     // 更新条目，读取--name、--id、--mobile、--hobby、--email参数
-    var name = program.name;
-    var id = program.id;
-    var mobile = program.mobile;
-    var hobby = program.hobby;
-    var email = program.email;
+    var name = options.name;
+    var id = options.id;
+    var mobile = options.mobile;
+    var hobby = options.hobby;
+    var email = options.email;
+
     if (!isValidId(id) || !isValidMobile(mobile) || !isValidEmail(email)) {
         console.log('参数不合法');
         return;
     }
+
+    console.log('更新条目：' + name + ' ' + id + ' ' + email + ' ' + mobile + ' ' + hobby);
+
     // 使用request模块发送POST请求，更新条目，只更新新输入的参数，调用上面服务端的API：
     request.post({
         url: 'http://localhost:1337/api/update',
@@ -127,6 +141,9 @@ if (program.add) {
             mobile: mobile,
             hobby: hobby,
             email: email
+        },
+        headers: {
+            'Content-Type': 'application/json'
         }
     }, function (err, httpResponse, body) {
         if (err) {
@@ -137,9 +154,10 @@ if (program.add) {
     });
     // 退出程序
     process.exit(0);
-} else if (program.delete) {
-    // 删除条目，读取--id参数
-    var id = program.id;
+} else if (options.delete) {
+    // 删除条目，读取id参数
+    var id = options.delete;
+
     if (!isValidId(id)) {
         console.log('参数不合法');
         return;
@@ -149,11 +167,16 @@ if (program.add) {
         console.log('请输入参数');
         return;
     }
+    console.log('删除条目：' + id);
+
     // 使用request模块发送POST请求，删除条目
     request.post({
         url: 'http://localhost:1337/api/delete',
         form: {
             id: id
+        },
+        headers: {
+            'Content-Type': 'application/json'
         }
     }, function (err, httpResponse, body) {
         if (err) {
@@ -162,10 +185,14 @@ if (program.add) {
             console.log('删除成功');
         }
     });
-} else if (program.list) {
+    process.exit(0);
+} else if (options.list) {
     // 调用上面服务端的API：api/list，列出所有条目
-    var sort = program.sort;
+    var sort = options.list;
     // 如果没有输入参数，按照des列出所有条目
+
+    console.log('列出条目：' + sort);
+
     if (sort === 'ascend') {
         // 使用request模块发送GET请求，列出所有条目
         request.get('http://localhost:1337/api/list?sort=asc', function (err, httpResponse, body) {
@@ -187,10 +214,12 @@ if (program.add) {
     } else {
         console.log('请输入正确的参数');
     }
-} else if (program.find) {
-    // 查找条目，读取--id参数
-    var id = program.id;
+    process.exit(0);
+} else if (options.find) {
+    // 查找条目，读取find的id参数
+    var id = options.find;
     // 如果没有输入参数，提示用户输入参数
+
     if (!id) {
         console.log('请输入参数');
         return;
@@ -199,6 +228,7 @@ if (program.add) {
         console.log('参数不合法');
         return;
     }
+    console.log('查找条目：' + id);
     // 使用request模块发送GET请求，查找条目
     request.get('http://localhost:1337/api/find?id=' + id, function (err, httpResponse, body) {
         if (err) {
@@ -207,7 +237,9 @@ if (program.add) {
             console.log(body);
         }
     });
+    process.exit(0);
 } else {
+    // 为什么直接跳到这里？因为没获取到命令行参数
     console.log('请输入正确的命令行参数，可通过 node app -h 查看帮助');
 }
 
