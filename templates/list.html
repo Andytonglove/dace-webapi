@@ -88,22 +88,17 @@
                         {% endfor %} -->
                     </tbody>
                     <!-- 在表格下方加入查找、排序、新增按钮，位置居中，相互之间间隔一点距离 -->
-                    <!-- <tfoot>
+                    <tfoot>
                         <tr>
                             <td colspan="5">
                                 <div class="btn-group btn-group-justified" role="group" aria-label="...">
                                     <div class="btn-group col-md-2" role="group">
-                                        <button type="button" class="btn btn-info" id="btn1">查找</button>
-                                    </div>
-                                    <div class="btn-group col-md-2" role="group">
-                                        <button type="button" class="btn btn-warning" id="btn2">排序</button>
-                                    </div>
-                                    <div class="btn-group col-md-2" role="group">
-                                        <button type="button" class="btn btn-success" id="btn3">新增</button>
+                                        <button type="button" class="btn btn-success" id="btnAdd"
+                                            onclick="additem()">＜新增（去采集首页）</button>
                                     </div>
                             </td>
                         </tr>
-                    </tfoot> -->
+                    </tfoot>
 
                 </table>
             </div>
@@ -180,9 +175,15 @@
         }
 
         function updateitem(id) {
-            // 修改按钮事件，点击修改按钮，弹出模态框提示
-            alert("请前往APP端，使用 node app 命令进行修改查看\n更多查找、排序、新增功能同样请前往APP端^^");
+            alert("可前往APP端，使用 node app 命令进行修改查看\n更多查找、排序、新增功能同样可前往APP端^^");
         }
+
+        function additem() {
+            // 或许可以动态生成一个模态框，可以弹出来，包括一个表单，可以输入数据
+            // 这里跳转到收集首页
+            window.location.href = "index.html";
+        }
+
 
     </script>
 </body>

@@ -87,7 +87,7 @@ router.get("/api/show", function (req, res) {
     });
 });
 
-// /api/add接口，增加一项数据：新增，和submit重合
+// /api/add接口，增加一项数据：新增一条记录
 router.post("/api/add", function (req, res) {
     // 请求格式为：{data: {id: "xxx", name: "xxx", ...}}
     var data = req.body;
@@ -194,7 +194,7 @@ router.post("/api/update", function (req, res) {
     });
 });
 
-// delete/:id请求，删除某一项数据
+// delete/:id请求，删除某一项数据 √
 router.delete("/api/delete/:id", function (req, res) {
     // 请求体结构应该为：{data: {id: "xxx"}}
     var id = req.params.id;
@@ -227,7 +227,7 @@ router.delete("/api/delete/:id", function (req, res) {
     });
 });
 
-// 输出所有条目列表，可以指定按时间升序或降序排列：列表 √
+// 输出所有条目列表，可以指定按时间升序或降序排列：列表
 router.get("/api/list", function (req, res) {
     var sort = req.query.sort; // 获取排序方式，升序或降序
     // 例如：http://localhost:3000/api/list?sort=asc

@@ -74,7 +74,7 @@ if (options.update) {
 
 // 示例：node app -a -n "张三" -i "1234567890" -m "17345678901" -b "篮球" -e "zhangsan@example.com"
 
-// 如果输入了命令，执行对应的命令
+// 如果输入了命令，执行对应的命令：增 删 改 查 列表
 if (options.add) {
     // 添加条目，读取--name、--id、--mobile、--hobby、--email参数，支持短参数和长参数，以及中文
     var name = options.name;
@@ -175,10 +175,10 @@ if (options.add) {
     // 使用request模块发送请求，删除条目
     request.delete('http://localhost:1337/api/delete/' + id, function (err, httpResponse, body) {
         if (err) {
-            console.log('删除失败' + err.message);
+            console.log('删除失败 ' + err.message);
         } else {
             body = JSON.parse(body);
-            console.log('删除成功' + body.message);
+            console.log('删除成功 ' + body.message);
         }
     });
 
@@ -186,7 +186,6 @@ if (options.add) {
     // 查找条目，读取find的id参数
     var id = options.find;
     // 如果没有输入参数，提示用户输入参数
-
     if (!id) {
         console.log('请输入参数');
         return;
