@@ -120,7 +120,7 @@ if (options.add) {
                 console.log('添加失败 ' + body.message);
                 return;
             } else {
-                console.log('添加条目：' + name + ' ' + id + ' ' + email + ' ' + phone + ' ' + hobby);
+                console.log('添加条目：' + name + ' ' + id + ' ' + email + ' ' + mobile + ' ' + hobby);
                 console.log('添加成功 ' + body.message);
             }
         }

@@ -1,7 +1,1 @@
-{
-    "name": "测试一下",
-    "id": "1234567891",
-    "phone": "12345678923",
-    "hobby": "太极",
-    "email": "111@q.com"
-}
+{"name":"李四","id":"1234567891","email":"zhangsan@example.com","hobby":"篮球和足球一起","phone":"17345678901"}
