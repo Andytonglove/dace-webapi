@@ -40,3 +40,4 @@
     3. api.js：api接口文件，包含了所有的api接口，运行：`node api.js`即可启动服务，默认启动在`localhost:1337`，可通过`-p`参数指定端口号，如启动在其他端口，请自行修改`app.js`与前端网页中各处api网址
     4. app.js：客户端App文件，运行：`node app -h`即可启动运行，查看帮助
     5. README.md：说明文档，即本文件
+    6. 整体介绍图示：![整体介绍图示](./dace-abs.jpg)
