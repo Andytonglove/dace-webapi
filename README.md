@@ -41,3 +41,13 @@
     4. app.js：客户端App文件，运行：`node app -h`即可启动运行，查看帮助
     5. README.md：说明文档，即本文件
     6. 整体介绍图示：![整体介绍图示](./dace-abs.jpg)
+
+4. 项目运行
+    本项目运行时可遵循以下步骤：
+    1. 通过npm install在项目下配置安装所需node包，文件中已给出package配置文件；
+    2. 运行api：在目录下运行node api.js，打开API服务。
+    3. 接下来便可以查看前端网页与APP端了！
+        1. 前端网页：在浏览器中打开templates文件夹下的index.html，即可查看前端网页。
+        2. APP端：在命令行中运行node app.js，即可查看APP端。
+
+#### 衷心感谢！
